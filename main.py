@@ -1,5 +1,5 @@
 from fastapi import FastAPI, UploadFile, File
-from fastapi.responses import JSONResponse
+from core.text_parser import parse_text_chat
 
 app = FastAPI()
 
@@ -10,8 +10,10 @@ def root():
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
     contents = await file.read()
-    return{
+    text = contents.decode("utf-8")
+    messages = parse_text_chat(text)
+    return {
         "filename": file.filename,
-        "size_bytes": len(contents),
-        "content_type": file.content_type
+        "message_count": len(messages),
+        "messages": messages
     }
