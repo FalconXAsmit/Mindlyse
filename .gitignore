@@ -4,3 +4,4 @@ __pycache__/
 .env
 sample_chat.txt
 test.http
+test_gemini.py
