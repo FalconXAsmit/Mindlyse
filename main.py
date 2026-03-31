@@ -1,5 +1,6 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from core.text_parser import parse_text_chat
+from core.pdf_parser import parse_pdf_chat
 from core.analyzer import analyze_conversation
 from models.conversation import Conversation, Message, AnalysisResult
 
@@ -9,25 +10,39 @@ app = FastAPI(
     version="0.1.0"
 )
 
+SUPPORTED_TYPES = {
+    "text/plain": "txt",
+    "application/pdf": "pdf"
+}
+
 @app.get("/")
 def root():
     return {"message": "Mindlyse is alive"}
 
 @app.post("/upload", response_model=Conversation)
 async def upload_file(file: UploadFile = File(...)):
-    if not file.filename.endswith(".txt"):
-        raise HTTPException(status_code=400, detail="Only .txt files supported right now")
-    
+    if file.content_type not in SUPPORTED_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail= "Unsupported file type. Supported: txt, pdf, png, jpg"
+        )
+
     try:
         contents = await file.read()
-        text = contents.decode("utf-8")
     except Exception:
-        raise HTTPException(status_code=400, detail="Could not read file, make sure it is UTF-8 encoded")
+        raise HTTPException(status_code=400, detail="Could not read file")
+
+    file_type = SUPPORTED_TYPES[file.content_type]
+
+    if file_type == "txt":
+        text = contents.decode("utf-8")
+    elif file_type == "pdf":
+        text = parse_pdf_chat(contents)
 
     raw_messages = parse_text_chat(text)
 
     if not raw_messages:
-        raise HTTPException(status_code=422, detail="No messages found in file, check the format")
+        raise HTTPException(status_code=422, detail="No messages found in file")
 
     messages = [Message(**msg) for msg in raw_messages]
     return Conversation(
@@ -38,14 +53,23 @@ async def upload_file(file: UploadFile = File(...)):
 
 @app.post("/analyze", response_model=AnalysisResult)
 async def analyze(file: UploadFile = File(...)):
-    if not file.filename.endswith(".txt"):
-        raise HTTPException(status_code=400, detail="Only .txt files supported right now")
+    if file.content_type not in SUPPORTED_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail="Unsupported file type. Supported: txt, pdf, png, jpg"
+        )
 
     try:
         contents = await file.read()
-        text = contents.decode("utf-8")
     except Exception:
         raise HTTPException(status_code=400, detail="Could not read file")
+
+    file_type = SUPPORTED_TYPES[file.content_type]
+
+    if file_type == "txt":
+        text = contents.decode("utf-8")
+    elif file_type == "pdf":
+        text = parse_pdf_chat(contents)
 
     raw_messages = parse_text_chat(text)
 
