@@ -26,6 +26,6 @@ each flag and a pattern-level summary of the overall dynamic.
 - POST /analyze — full manipulation analysis
 
 ## Coming soon
-- PDF and image support
+- Image support (Maybe)
 - Pre-screening ML classifier
 - Frontend UI
