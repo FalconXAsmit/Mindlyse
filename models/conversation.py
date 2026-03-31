@@ -1,5 +1,13 @@
 from pydantic import BaseModel
 from typing import Optional
+from enum import Enum
+
+
+class SeverityLevel(str, Enum):
+    none = "none"
+    low = "low"
+    medium = "medium"
+    high = "high"
 
 
 class Message(BaseModel):
@@ -24,5 +32,5 @@ class FlaggedMessage(BaseModel):
 class AnalysisResult(BaseModel):
     flagged_messages: list[FlaggedMessage]
     pattern_summary: str
-    severity: str
-    dominant_tactic: str
+    severity: SeverityLevel
+    dominant_tactic: Optional[str] = None

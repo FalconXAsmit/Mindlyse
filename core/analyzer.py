@@ -45,7 +45,20 @@ def analyze_conversation(messages: list[dict]) -> AnalysisResult:
             "dominant_tactic": "the most prominent tactic used"
         }}
 
-        If no manipulation tactics are found, return empty flagged_messages and set severity to "low".
+        If the conversation appears healthy and shows no signs of manipulation, return:
+        {{
+            "flagged_messages": [],
+            "pattern_summary": "This conversation shows no significant signs of psychological manipulation. The dynamic appears balanced and respectful.",
+            "severity": "none",
+            "dominant_tactic": null
+        }}
+
+        Only assign low/medium/high severity if actual manipulation tactics are present.
+        Severity guide:
+        - none: no tactics detected
+        - low: 1-2 minor instances, could be unintentional
+        - medium: repeated patterns across multiple messages
+        - high: systematic, pervasive manipulation throughout
 
         Conversation:
         {conversation_text}
