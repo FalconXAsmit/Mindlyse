@@ -5,4 +5,4 @@ __pycache__/
 sample_chat.txt
 test.http
 test_gemini.py
-text/
+texts/
