@@ -6,3 +6,7 @@ sample_chat.txt
 test.http
 test_gemini.py
 texts/
+ml/encoder.pkl
+ml/model_transformer.pkl
+ml/model.pkl
+ml/vectorizer.pkl
