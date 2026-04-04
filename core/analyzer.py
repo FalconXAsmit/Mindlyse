@@ -1,25 +1,20 @@
 from google import genai
-from dotenv import load_dotenv
 from models.conversation import AnalysisResult
 import sys
 import os
 import json
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'ml'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'ml'))
 from ml.classifier import filter_suspicious
 
-load_dotenv()
-
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-
-def analyze_conversation(messages: list[dict]) -> AnalysisResult:
+def analyze_conversation(messages: list[dict], api_key: str) -> AnalysisResult:
     if not messages:
         raise ValueError("No messages to analyze")
 
-    # pre-screen with classifier first
+    client = genai.Client(api_key=api_key)
+
     suspicious_messages = filter_suspicious(messages)
 
-    # if classifier found nothing suspicious skip Gemini entirely
     if not suspicious_messages:
         return AnalysisResult(
             flagged_messages=[],
@@ -28,7 +23,6 @@ def analyze_conversation(messages: list[dict]) -> AnalysisResult:
             dominant_tactic=None
         )
 
-    # only send suspicious messages to Gemini
     conversation_text = "\n".join([
         f"[index:{msg['original_index']}] {msg['speaker']} [{msg['timestamp']}]: {msg['text']}"
         for msg in suspicious_messages
@@ -40,12 +34,10 @@ You are an expert in psychological manipulation and abusive communication patter
 Analyze the following messages which have been pre-screened as potentially manipulative.
 
 For each message that contains a manipulation tactic, provide:
-- The message index (starting from 0)
+- The message index — use the [index:N] number shown before each message
 - The speaker
 - The tactic name (e.g. gaslighting, love bombing, DARVO, isolation, intermittent reinforcement, guilt tripping, passive aggression)
 - A brief explanation of why this is a red flag
-
-Then provide a pattern-level summary of the overall dynamic.
 
 Return your response as valid JSON only, no extra text, in this exact format:
 {{
@@ -76,11 +68,8 @@ Severity guide:
 - medium: repeated patterns across multiple messages
 - high: systematic, pervasive manipulation throughout
 
-For each message that contains a manipulation tactic, provide:
-- The message index — use the [index:N] number shown before each message, not a sequential number
-- The speaker
-- The tactic name
-- A brief explanation of why this is a red flag
+The conversation may be in English, Hindi, Romanised Hindi, or a mix. Analyze accordingly.
+
 Messages to analyze:
 {conversation_text}
 """
