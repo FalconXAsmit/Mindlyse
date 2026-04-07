@@ -105,7 +105,6 @@ mindlyse/
 ├── core/
 │   ├── text_parser.py       # WhatsApp + custom format parser
 │   ├── pdf_parser.py        # PDF text extraction
-│   ├── image_parser.py      # OCR for screenshots
 │   └── analyzer.py          # Gemini analysis pipeline
 ├── ml/
 │   ├── __init__.py
